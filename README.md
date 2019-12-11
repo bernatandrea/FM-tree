@@ -29,10 +29,10 @@ vazne datoteke:
 	-primjer za kraci niz iz dokumentacije (za provjere)
 	
 #todo
-	-implementirati od gotovih stvari count i locate metodu
+	-implementirati od gotovih stvari locate(FM tree) metodu
 
 #napomena!!!
-	prije svakog rada kod sebe na racunalu obavezno: git pull!! pa tek onda radite ili si napravite posebnu granu: git checkout -b ime-grane
+	-prije svakog rada kod sebe na racunalu obavezno: git pull!! pa tek onda radite ili si napravite posebnu granu: git checkout -b ime-grane
 	pa tamo commitajte
-	
+	-prije svakog commita IZBRISI .o i .exe datoteke!!
 	

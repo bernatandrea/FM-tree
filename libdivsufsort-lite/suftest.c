@@ -125,7 +125,7 @@ main(int argc, const char *argv[]) {
   FILE *fp;
   const char *fname;
   unsigned char *T;
-  unsigned char *T2;
+  unsigned char *bwt;
   unsigned char *sortedT;
   int *SA;
   int *C;
@@ -162,11 +162,11 @@ main(int argc, const char *argv[]) {
 
   /* Allocate 5n bytes of memory. */
   T = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
-  T2 = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
+  bwt = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
   sortedT = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
   SA = (int *)malloc((size_t)n * sizeof(int));
   C = (int *)malloc((size_t)5 * sizeof(int));  
-  if((T == NULL) ||(T2 == NULL) ||(sortedT == NULL) || (SA == NULL) || (C == NULL)) {
+  if((T == NULL) ||(bwt == NULL) ||(sortedT == NULL) || (SA == NULL) || (C == NULL)) {
     fprintf(stderr, "%s: Cannot allocate memory.\n", argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -195,23 +195,24 @@ main(int argc, const char *argv[]) {
 
   /* Deallocate memory. */
   printf("\n");
-  divbwt(T,T2,NULL,n);
+  divbwt(T,bwt,NULL,n);
 
 /**  printf("T: ");
   for(int i=0;i<n;i++){
 	  printf("%c, ",T[i]);
   }
-  printf("\nBWT: ");
 
-  for(int i=0;i<n;i++){
-	  printf("%c, ",T2[i]);
-  }
   printf("\nSA: ");
   for(int i=0;i<n;i++){
 	  printf("%d, ",SA[i]);
   }**/
+  printf("\nBWT: ");
+
+  for(int i=0;i<n;i++){
+	  printf("%c, ",bwt[i]);
+  }
   
-  printf("occ[a]: %d \n",occ(T,'a',n));
+//  printf("occ[a]: %d \n",occ(T,'a',n));
   
   printf("\nSorted T: ");
   getSortedT(T,SA,sortedT,n);
@@ -225,17 +226,24 @@ main(int argc, const char *argv[]) {
 	printf("%d, ",C[i]);
   }
   
-  printf("LF (sp)= %d\n",LFoperation(C,'a',T2,3));
-  printf("LF (ep)= %d",LFoperation(C,'a',T2,5+1)-1);
+//  printf("LF (sp)= %d\n",LFoperation(C,'a',bwt,3));
+//  printf("LF (ep)= %d",LFoperation(C,'a',bwt,5+1)-1);
   
   finish = clock();
   fprintf(stderr, "%.4f sec\n", (double)(finish - start) / (double)CLOCKS_PER_SEC);
+
+  int sp=0;
+  int ep=0;
+  char P[]="t";
+  int rez=count(bwt,C,P,&sp,&ep,n);
+  
+  printf("\n Count: %d, sp:%d, ep: %d",rez,sp,ep);
 
   free(C);
   free(SA);
   free(T);
   free(sortedT);
-  free(T2);
+  free(bwt);
 
   return 0;
 }

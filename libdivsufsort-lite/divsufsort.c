@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #ifdef _OPENMP
 # include <omp.h>
 #endif
@@ -1842,7 +1843,7 @@ int occ(const unsigned char *T, char c, int n){
 	int count=0;
 	int i=0;
 	
-	for(i=0;i<n;i++){
+	for(i=0;i<=n;i++){
 		if(tolower((char)T[i])==c){
 			count+=1;
 		}
@@ -1874,4 +1875,54 @@ int acgtToInt(char c){
 
 int LFoperation(int *C,char s,const unsigned char *bwt,int index){
 	return C[acgtToInt(s)]+rank(s,bwt,index);
+}
+
+
+int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n){
+	int i=strlen(P)-1;
+	int s=P[i--];
+	int si=acgtToInt(s);
+	printf("\nIn count method");
+	
+	//ako nema pojave slova izlazi
+	if(C[si]==0 && si!=0){
+		return -1;
+	}
+	*sp=C[si];
+	
+	//ako sljedece abecedno slovo ima 0 pojava trazi prvo slovo koje se ponavlja bar 1x
+	while(C[si+1]==0){
+		si++;
+	}
+	
+	//ako ne postoji sljedece znaci da je s zadnje abecedno slovo i ide do kraja
+	// ili??
+	if((si+1)>=5){
+		*ep=n-1;
+	}else{
+		*ep=C[si+1]-1;
+	}
+	printf("\n first sp: %d, ep:%d",*sp,*ep);
+	
+	while(i>=0 && sp<ep ){
+		printf("\n-----i:%d----",i);
+
+		s=P[i--];	
+		printf("\ns:%c",s);
+		
+		printf("\nC:%d, rank: %d",C[acgtToInt(s)],rank(s,bwt,*sp));
+		printf("\nC:%d, rank: %d",C[acgtToInt(s)],rank(s,bwt,*ep+1));
+
+		*sp=C[acgtToInt(s)]+rank(s,bwt,*sp);
+		*ep=C[acgtToInt(s)]+rank(s,bwt,*ep+1)-1;
+		
+		printf("\n sp: %d, ep:%d-------",*sp,*ep);
+
+	}
+	printf("\n END sp: %d, ep:%d",*sp,*ep);
+	if(*sp>*ep){
+		return -1;
+	}else{
+		return *ep-*sp+1;
+	}
 }
