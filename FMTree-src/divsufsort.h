@@ -54,12 +54,6 @@ divsufsort(const unsigned char *T, int *SA, int n);
  */
 int
 divbwt(const unsigned char *T, unsigned char *U, int *A, int n);
-void getSortedT(const unsigned char *T,int *SA, unsigned char *sortedT, int n);
-void getC(unsigned char *sortedT,int *C, int n);
-int occ(const unsigned char *T, char c, int n);
-int rank(char s,const unsigned char *bwt,int index);
-int LFoperation(int *C,char s,const unsigned char *bwt,int index);
-int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep, int n );
 
 
 #ifdef __cplusplus
@@ -67,3 +61,4 @@ int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep, int n );
 #endif /* __cplusplus */
 
 #endif /* _DIVSUFSORT_H */
+
