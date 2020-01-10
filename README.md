@@ -59,7 +59,7 @@ program preferences will be written on a console.
 
 * Example: After running FMtree it will report the following information:
 
-     ![example1](https://raw.githubusercontent.com/bernatandrea/FM-tree/master/example1.png) 
+     ![example1](https://github.com/bernatandrea/FM-tree/master/example1.png) 
 
 
 Test data:
