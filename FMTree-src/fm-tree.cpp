@@ -3,18 +3,9 @@
 #include <queue>
 #include <bitset>
 #include <set>
-#include "lib/bitmask.h"
-#include "lib/bitmask_bitset.h"
-#include "lib/bitmask_vector.h"
-#include "lib/data.h"
 #include "lib/rank_select.h"
-#include "lib/lookup_list.h"
-#include "lib/rb_tree.h"
-//#include "bit_array.h"
-#include <math.h>
 
 using namespace std;
-
 
 void set_bit(int A[], int k){
     A[k/32] |= 1 << (k%32);
@@ -92,6 +83,7 @@ int rankOp(char s,const unsigned char *bwt,int index){
 }
 
 int acgtToInt(char c){
+
     if(c=='$'){
         return 0;
     }else if(c=='A'){
@@ -119,11 +111,13 @@ int occBin(int* B,int index){
     }
     return occ;
 }
+
+
 int rankBin(int* B, int index){
     return occBin(B,index-1);
 }
 
-void createSSA(int* SA, int *B,int *SSA,int D, int n){
+void createSSA(int *SA, int *B,int *SSA,int D, int n){
     int j=0;
     for(int i=0; i<n;i++){
         if(SA[i]%D==0){
@@ -157,6 +151,7 @@ std::set<int> early_leaf_node(const unsigned char *T, const unsigned char *bwt,i
 
     return R;
 }
+
 
 int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n, rank_select *t){
     int i=strlen(P)-1;
