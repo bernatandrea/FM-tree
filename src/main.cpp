@@ -20,7 +20,11 @@
 
 using namespace std;
 
-
+/*
+	Creates and returns walvet tree.
+	
+	@Author: Robert Jambrecic
+*/
 rank_select* create_wavelet_tree(const unsigned char *bwt, int n){
 
     std::string content((const char *)bwt);
@@ -40,6 +44,11 @@ rank_select* create_wavelet_tree(const unsigned char *bwt, int n){
 }
 
 
+/*
+	Creates and returns binary walvet tree.
+	
+	@Author: Robert Jambrecic
+*/
 rank_select* create_binary_wavelet_tree(int *B, int n){
 
     string b_str;
@@ -63,6 +72,11 @@ rank_select* create_binary_wavelet_tree(int *B, int n){
 }
 
 
+/*
+	Writes set of locations R into result file.
+	
+	@Author: Anel Hadzimuratagic
+*/
 void make_result_file(std::set<int> R){
 
     std::ofstream outfile ("result.txt");
@@ -83,6 +97,11 @@ void make_result_file(std::set<int> R){
 }
 
 
+/*
+	Uppercase whole char array P.
+	
+	@Author: Andrea Bernat
+*/
 void upperCase(char *P){
 
     for (int i=0; i < ARRAY_SIZE; i++){
@@ -90,7 +109,11 @@ void upperCase(char *P){
     }  
 }
 
-
+/*
+	Main function for FM tree anlogith execution.
+	
+	@Author: Anel Hadzimuratagic, Robert Jambrecic, Andrea Bernat
+*/
 int main() {
     FILE *fp;
     char fname[ARRAY_SIZE];

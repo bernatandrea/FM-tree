@@ -7,19 +7,44 @@
 
 using namespace std;
 
+/*
+	Setting bit in array A on position k
+	
+	@Author:Andrea Bernat
+*/
 void set_bit(int A[], int k){
     A[k/32] |= 1 << (k%32);
 }
 
+
+/*
+	Remove/clear bit in array A on position k
+	
+	@Author:Andrea Bernat
+*/
 void clear_bit(int A[],int k){
     A[k/32] &= ~(1 << (k%32));
     //intValue &= ~(1 << bitPosition);
 }
 
+
+/*
+	Check bit in array A on position k,
+	if bit is set returns 1
+	else returns 0
+	
+	@Author:Andrea Bernat
+*/
 int test_bit(int A[],int k){
     return ( (A[k/32] & (1 << (k%32))) !=0 );
 }
 
+/*
+	Create sorted char array sortedT by sorting
+	char array T with help of SA array
+	
+	@Author:Anel Hadzimuratagic
+*/
 void getSortedT(const unsigned char *T, int *SA,unsigned char *sortedT, int n){
 
     for(int i=0;i<n;i++){
@@ -27,9 +52,12 @@ void getSortedT(const unsigned char *T, int *SA,unsigned char *sortedT, int n){
     }
 }
 
-/**
- returning C
-**/
+/*
+	Create array C with 5 elements:
+		- occurrences of A,C,G,T and $ elements
+		
+	@Author: Robert Jambrecic
+*/
 void getC(unsigned char *sortedT,int *C,int n){
     //aphabet acgt + $ = 5
     int occ_end=1; //$
@@ -61,9 +89,13 @@ void getC(unsigned char *sortedT,int *C,int n){
 
 }
 
-/**
-Returning occ
-**/
+/*
+	Calculates occurrences of char c in char array T
+	from start of the array to index n.
+	Returns number of occurrences.
+	
+	@Author: Robert Jambrecic
+*/
 int occ(const unsigned char *T, char c, int n){
     int count=0;
 
@@ -75,13 +107,24 @@ int occ(const unsigned char *T, char c, int n){
     return count;
 }
 
-/**
-Returning rank
-**/
+
+/*
+	Calculates linear rank operation of char c 
+	in BWT char array on position index.
+	Returns rank.
+	
+	@Author: Robert Jambrecic
+*/
 int rankOp(char s,const unsigned char *bwt,int index){
     return occ(bwt,s,index-1);
 }
 
+/*
+	Converting char to integer.
+	Returns integer presented by char c.
+	
+	@Author: Andrea Bernat
+*/
 int acgtToInt(char c){
 
     if(c=='$'){
@@ -98,10 +141,23 @@ int acgtToInt(char c){
     return -1;
 }
 
+/*
+	Calulated LF operation.
+	Returns result of operation.
+	
+	@Author: Anel Hadzimuratagic
+*/
 int LFoperation(int *C,char s,const unsigned char *bwt,int index){
     return C[acgtToInt(s)]+rankOp(s,bwt,index);
 }
 
+/*
+	Counting number of set bits in B array 
+	from start to index.
+	Returns number of occurrences.
+
+	@Author: Andrea Bernat
+*/
 int occBin(int* B,int index){
     int occ=0;
     for(int i=0;i<=index;i++){
@@ -112,23 +168,40 @@ int occBin(int* B,int index){
     return occ;
 }
 
-
+/*
+	Linear binary rank operation.
+	Returns rank of set 1 in array B to position index.
+	
+	@Author: Andrea Bernat
+*/
 int rankBin(int* B, int index){
     return occBin(B,index-1);
 }
 
+/*
+	Creates SSA and bit array B with sampled elements from SA array.
+	Where D is sampling distance.
+	
+	@Author: Anel Hadzimuratagic
+*/
 void createSSA(int *SA, int *B,int *SSA,int D, int n){
     int j=0;
     for(int i=0; i<n;i++){
         if(SA[i]%D==0){
             set_bit(B,i);
             SSA[j++]=SA[i];
-        } /*else{
-            B[i]=0;
-        }*/
+        }
     }
 }
 
+/*
+	Implementation of early leaf node calcululation to avoid 
+	expensive D-1 step in FM-tree.
+	Returns found set of locations of pattern P in target array T
+	in D-1 step of FM tree. 
+	
+	@Author: Anel Hadzimuratagic
+*/
 std::set<int> early_leaf_node(const unsigned char *T, const unsigned char *bwt,int *C, char P[], int *SSA, int *B, int n, rank_select* t,rank_select *tb){
     int sp = 0;
     int ep = 0;
@@ -153,24 +226,31 @@ std::set<int> early_leaf_node(const unsigned char *T, const unsigned char *bwt,i
 }
 
 
+/*
+	Counts number of pattern P occurrences 
+	in target array T, from bwt array.
+	Returns occurrence number and range [sp,ep] such that 
+	sortedT[sp,ep] includes all sortedT rows prefixed by P.
+	
+	@Author: Robert Jambrecic
+*/
 int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n, rank_select *t){
     int i=strlen(P)-1;
     int s=P[i--];
     int si=acgtToInt(s);
 
-    //ako nema pojave slova izlazi
+    //if there is no occurrence of char
     if(C[si]==0 && si!=0){
         return -1;
     }
     *sp=C[si];
 
-    //ako sljedece abecedno slovo ima 0 pojava trazi prvo slovo koje se ponavlja bar 1x
+    //if following char has no occurrences find first char which has at least 1 occurrence
     while(C[si+1]==0){
         si++;
     }
 
-    //ako ne postoji sljedece znaci da je s zadnje abecedno slovo i ide do kraja
-    // ili??
+    //if there is no following char(current char is last) go to last index
     if((si+1)>=5){
         *ep=n-1;
     }else{
@@ -190,9 +270,13 @@ int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n, ran
     }
 }
 
-/**
- * Returning num of located objects
- * **/
+/*
+	FM index locate function.
+	Calculates locations of pattern P occurrences.
+	Returns set of found locations.
+
+	@Author: Andrea Bernat
+*/
 std::set<int> locate(const unsigned char *bwt,int *C,int *B,int *SSA, int sp, int ep,set<int> R, rank_select *ran,rank_select *tb) {
     int i=0;
     int j=0;
@@ -212,10 +296,20 @@ std::set<int> locate(const unsigned char *bwt,int *C,int *B,int *SSA, int sp, in
 
 #define D 4
 #define treshold 0
+
 #define s_a 1
 #define s_c 2
 #define s_g 3
 #define s_t 4
+
+/*
+	Implementation of FM-tree function calculation.
+	Calculates locations of pattern P occurrences.
+	Returns set of found locations.
+	Optimized FM index locate function.
+	
+	@Author: Anel Hadzimuratagic, Andrea Bernat
+*/
 std::set<int> FM_tree(const unsigned char *bwt,const unsigned char *T,int *C,int *B,int* SSA, char P[], int *sp, int *ep ,int n, rank_select *ran,rank_select *tb) {
     int total_num = *ep - *sp + 1;
     int num = 0;
@@ -249,9 +343,6 @@ std::set<int> FM_tree(const unsigned char *bwt,const unsigned char *T,int *C,int
         sep=rankBin(B,*ep);
         num=num+sep-ssp+1;
         if(ep-sp+1<treshold){
-            /**
-             * klasicni locate u R upisuje lokacije i vraca broj upisanih
-             * **/
             int old_size=R.size();
             R = locate(bwt,C,B,SSA,*sp,*ep,R,ran,tb);
             int new_size=R.size();
