@@ -30,6 +30,7 @@ How to use
 For FM-tree:
 
 * First to generate binary write this commands in your command shell positioned inside the project.
+
 Create Makefile:
 ```
 cmake . 
@@ -58,7 +59,7 @@ program preferences will be written on a console.
 
 * Example: After running FMtree it will report the following information:
 
-     ![example1](https://raw.githubusercontent.com/bernatandrea/FMtree/master/img/example1.png) 
+     ![example1](https://raw.githubusercontent.com/bernatandrea/FM-tree/master/example1.png) 
 
 
 Test data:
