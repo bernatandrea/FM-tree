@@ -8,29 +8,29 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
-#include <unistd.h>
+#include <unistd.h> /* getopt */
 #include <vector>
 #include "lib/bitmask.h"
 #include "lib/bitmask_bitset.h"
 #include "lib/data.h"
 #include "lib/rank_select.h"
 #include "lib/rb_tree.h"
+#include <windows.h>
+#include <psapi.h>
 #define ARRAY_SIZE 100
-
 
 using namespace std;
 
 /*
-	Creates and returns walvet tree.
-	
+	Creates and returns wavelet tree.
 	@Author: Robert Jambrecic
 */
-rank_select* create_wavelet_tree(const unsigned char *bwt, int n){
+rank_select* create_wavelet_tree(const unsigned char *bwt){
 
     std::string content((const char *)bwt);
     std::function<bitmask *(uint32_t)> c;
     std::unordered_map<char, uint32_t> counters;
-    uint32_t word_size = ( n / 2 ) * 2;
+    uint32_t word_size = 23508030;
     c = bitmask_bitset::create;
     bitmask::set_creator(c);
     std::vector<data*> data_chunks;
@@ -45,8 +45,7 @@ rank_select* create_wavelet_tree(const unsigned char *bwt, int n){
 
 
 /*
-	Creates and returns binary walvet tree.
-	
+	Creates and returns binary wavelet tree.
 	@Author: Robert Jambrecic
 */
 rank_select* create_binary_wavelet_tree(int *B, int n){
@@ -59,7 +58,7 @@ rank_select* create_binary_wavelet_tree(int *B, int n){
     std::vector<data *> data_chunks_bin;
     std::function<bitmask *(uint32_t)> c_bin;
     std::unordered_map<char, uint32_t> counters_bin;
-    uint32_t word_size_bin = ( n / 2 ) * 2;
+    uint32_t word_size_bin = 2358030;
     c_bin = bitmask_bitset::create;
     bitmask::set_creator(c_bin);
 
@@ -67,14 +66,12 @@ rank_select* create_binary_wavelet_tree(int *B, int n){
         data_chunks_bin.push_back(data::create(b_str, word_size_bin, counters_bin));
     }
 
-
     return new rb_tree(data_chunks_bin);
 }
 
 
 /*
 	Writes set of locations R into result file.
-	
 	@Author: Anel Hadzimuratagic
 */
 void make_result_file(std::set<int> R){
@@ -86,32 +83,41 @@ void make_result_file(std::set<int> R){
     outfile << "\n\nLocations: \n";
 
     int i = 0;
-    for (auto elem : R) { 
-	i++;
+    for (auto elem : R) {
+        i++;
         outfile << elem;
 
-	if(i != R.size()){
-	    outfile << ", ";
-	}
-    } 	
+        if(i != R.size()){
+            outfile << ", ";
+        }
+    }
 }
-
 
 /*
 	Uppercase whole char array P.
-	
 	@Author: Andrea Bernat
 */
 void upperCase(char *P){
 
     for (int i=0; i < ARRAY_SIZE; i++){
         P[i] = toupper(P[i]);
-    }  
+    }
 }
 
+
+void calculate_memory_usage(){
+    PROCESS_MEMORY_COUNTERS pmc;
+    BOOL result = GetProcessMemoryInfo(GetCurrentProcess(),
+                                       &pmc,
+                                       sizeof( pmc ));
+    if(result){
+        printf( "\nThere is %d KB memory in use.\n", pmc.WorkingSetSize/1024 );
+    }
+}
+
+
 /*
-	Main function for FM tree anlogith execution.
-	
+	Main function for FM tree execution.
 	@Author: Anel Hadzimuratagic, Robert Jambrecic, Andrea Bernat
 */
 int main() {
@@ -153,14 +159,14 @@ int main() {
     fprintf(stdout, "Input sampling distance: ");
     scanf("%d", &D);
 
-   /* Allocate 5n bytes of memory. */
+    /* Allocate 5n bytes of memory. */
     unsigned char *T = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
     unsigned char *bwt = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
     unsigned char *sortedT = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
     int *SA = (int *)malloc((size_t)n * sizeof(int));
     int *SSA = (int *)malloc((size_t)(int(ceil(n/(float)D))) * sizeof(int));
     int *C = (int *)malloc((size_t)5 * sizeof(int));
-    int *B = (int *)malloc((size_t)n * sizeof(int));
+    int *B = (int *)malloc((size_t)(int(ceil(n/(float)32)) * sizeof(int)));
 
     if((T == NULL) ||(bwt == NULL) ||(sortedT == NULL) || (SA == NULL) || (SSA == NULL)|| (C == NULL)) {
         fprintf(stderr, "%s: Cannot allocate memory.\n", "main");
@@ -199,38 +205,33 @@ int main() {
     free(sortedT);
 
     while(true){
-
         int mode;
         fprintf(stdout, "\nInput mode:\n1 - make patterns\n2 - build FMIndex \n3 - FMTree search\n\n");
-	fprintf(stdout, "Choose a method: ");
+        fprintf(stdout, "Choose a method: ");
         scanf("%d", &mode);
 
         if(mode == 1){
 
-	    fprintf(stdout, "\nPlease input the pattern for search:\n");
+            fprintf(stdout, "\nPlease input the pattern for search:\n");
             scanf("%s", P);
-	    upperCase(P);
-       
+            upperCase(P);
+
         }else if(mode == 2){
-	    
+
             //---------------- create walvet tree for bwt -------------
 
-            t = create_wavelet_tree(bwt, n);
-
-            count(bwt,C,P,&sp,&ep,n,t);
-
-	    createSSA(SA,B,SSA,D,n);
-
-    	    free(SA);
+            t = create_wavelet_tree(bwt);
+            printf("\nCount found %d locations.\n",count(bwt,C,P,&sp,&ep,n,t));
+            createSSA(SA,B,SSA,D,n);
+            free(SA);
 
             //---------------- create binary walvet tree for bwt -------------
 
             tb = create_binary_wavelet_tree(B, n);
 
-
         }else if(mode == 3) {
 
-	    struct timeval tvalStart, tvalEnd;
+            struct timeval tvalStart, tvalEnd;
             gettimeofday(&tvalStart, NULL);
             std::set<int> R=FM_tree(bwt,T,C,B,SSA,P,&sp,&ep,n,t,tb);
             gettimeofday(&tvalEnd, NULL);
@@ -240,12 +241,10 @@ int main() {
             printf("\nNumber of matched locations = %ld", R.size());
             printf("\n************************************************\n");
 
-	    make_result_file(R);
-
+            make_result_file(R);
             break;
-           
-        }else{
 
+        }else{
             fprintf(stdout, "Do not input required options! FMtree will exit ...\n");
             break;
         }
@@ -257,6 +256,8 @@ int main() {
     free(bwt);
     free(B);
     free(SSA);
+
+    calculate_memory_usage();
 
     return 0;
 }

@@ -9,17 +9,14 @@ using namespace std;
 
 /*
 	Setting bit in array A on position k
-	
 	@Author:Andrea Bernat
 */
 void set_bit(int A[], int k){
     A[k/32] |= 1 << (k%32);
 }
 
-
 /*
 	Remove/clear bit in array A on position k
-	
 	@Author:Andrea Bernat
 */
 void clear_bit(int A[],int k){
@@ -27,12 +24,10 @@ void clear_bit(int A[],int k){
     //intValue &= ~(1 << bitPosition);
 }
 
-
 /*
 	Check bit in array A on position k,
 	if bit is set returns 1
 	else returns 0
-	
 	@Author:Andrea Bernat
 */
 int test_bit(int A[],int k){
@@ -42,11 +37,9 @@ int test_bit(int A[],int k){
 /*
 	Create sorted char array sortedT by sorting
 	char array T with help of SA array
-	
 	@Author:Anel Hadzimuratagic
 */
 void getSortedT(const unsigned char *T, int *SA,unsigned char *sortedT, int n){
-
     for(int i=0;i<n;i++){
         sortedT[i]=T[SA[i]];
     }
@@ -55,7 +48,6 @@ void getSortedT(const unsigned char *T, int *SA,unsigned char *sortedT, int n){
 /*
 	Create array C with 5 elements:
 		- occurrences of A,C,G,T and $ elements
-		
 	@Author: Robert Jambrecic
 */
 void getC(unsigned char *sortedT,int *C,int n){
@@ -93,7 +85,6 @@ void getC(unsigned char *sortedT,int *C,int n){
 	Calculates occurrences of char c in char array T
 	from start of the array to index n.
 	Returns number of occurrences.
-	
 	@Author: Robert Jambrecic
 */
 int occ(const unsigned char *T, char c, int n){
@@ -107,12 +98,10 @@ int occ(const unsigned char *T, char c, int n){
     return count;
 }
 
-
 /*
-	Calculates linear rank operation of char c 
+	Calculates linear rank operation of char c
 	in BWT char array on position index.
 	Returns rank.
-	
 	@Author: Robert Jambrecic
 */
 int rankOp(char s,const unsigned char *bwt,int index){
@@ -122,7 +111,6 @@ int rankOp(char s,const unsigned char *bwt,int index){
 /*
 	Converting char to integer.
 	Returns integer presented by char c.
-	
 	@Author: Andrea Bernat
 */
 int acgtToInt(char c){
@@ -142,9 +130,8 @@ int acgtToInt(char c){
 }
 
 /*
-	Calulated LF operation.
+	Calculates LF operation.
 	Returns result of operation.
-	
 	@Author: Anel Hadzimuratagic
 */
 int LFoperation(int *C,char s,const unsigned char *bwt,int index){
@@ -152,10 +139,9 @@ int LFoperation(int *C,char s,const unsigned char *bwt,int index){
 }
 
 /*
-	Counting number of set bits in B array 
+	Counting number of set bits in B array
 	from start to index.
 	Returns number of occurrences.
-
 	@Author: Andrea Bernat
 */
 int occBin(int* B,int index){
@@ -171,7 +157,6 @@ int occBin(int* B,int index){
 /*
 	Linear binary rank operation.
 	Returns rank of set 1 in array B to position index.
-	
 	@Author: Andrea Bernat
 */
 int rankBin(int* B, int index){
@@ -181,7 +166,6 @@ int rankBin(int* B, int index){
 /*
 	Creates SSA and bit array B with sampled elements from SA array.
 	Where D is sampling distance.
-	
 	@Author: Anel Hadzimuratagic
 */
 void createSSA(int *SA, int *B,int *SSA,int D, int n){
@@ -195,27 +179,31 @@ void createSSA(int *SA, int *B,int *SSA,int D, int n){
 }
 
 /*
-	Implementation of early leaf node calcululation to avoid 
+	Implementation of early leaf node calculation to avoid
 	expensive D-1 step in FM-tree.
 	Returns found set of locations of pattern P in target array T
-	in D-1 step of FM tree. 
-	
+	in D-1 step of FM tree.
 	@Author: Anel Hadzimuratagic
 */
 std::set<int> early_leaf_node(const unsigned char *T, const unsigned char *bwt,int *C, char P[], int *SSA, int *B, int n, rank_select* t,rank_select *tb){
     int sp = 0;
     int ep = 0;
-    int i = strlen(P)-1;
+    int i = strlen(P);
     char P_1[i-1];
     std::set<int> R;
+
+    if(i==1){
+        return R;
+    }
+
     string s = P;
     strcpy(P_1, s.substr(1,i).c_str());
 
     count(bwt, C, P_1, &sp, &ep, n, t);
 
     for(int j = sp; j<=ep; j++){
-        if(test_bit(B,i)==1){
-            int index = tb->rank('1', i-1);
+        if(test_bit(B,j)==1){
+            int index = tb->rank('1', j-1);
             if(P[0] == T[SSA[index]-1]){
                 R.insert(SSA[index]-1);
             }
@@ -225,13 +213,11 @@ std::set<int> early_leaf_node(const unsigned char *T, const unsigned char *bwt,i
     return R;
 }
 
-
 /*
-	Counts number of pattern P occurrences 
+	Counts number of pattern P occurrences
 	in target array T, from bwt array.
-	Returns occurrence number and range [sp,ep] such that 
+	Returns occurrence number and range [sp,ep] such that
 	sortedT[sp,ep] includes all sortedT rows prefixed by P.
-	
 	@Author: Robert Jambrecic
 */
 int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n, rank_select *t){
@@ -239,18 +225,17 @@ int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n, ran
     int s=P[i--];
     int si=acgtToInt(s);
 
-    //if there is no occurrence of char
+    //if there is no occurrence return -1
     if(C[si]==0 && si!=0){
         return -1;
     }
     *sp=C[si];
 
-    //if following char has no occurrences find first char which has at least 1 occurrence
+    //look for next letter that appears at least once.
     while(C[si+1]==0){
         si++;
     }
 
-    //if there is no following char(current char is last) go to last index
     if((si+1)>=5){
         *ep=n-1;
     }else{
@@ -274,7 +259,6 @@ int count(const unsigned char *bwt,int *C,char P[], int *sp, int *ep ,int n, ran
 	FM index locate function.
 	Calculates locations of pattern P occurrences.
 	Returns set of found locations.
-
 	@Author: Andrea Bernat
 */
 std::set<int> locate(const unsigned char *bwt,int *C,int *B,int *SSA, int sp, int ep,set<int> R, rank_select *ran,rank_select *tb) {
@@ -296,7 +280,6 @@ std::set<int> locate(const unsigned char *bwt,int *C,int *B,int *SSA, int sp, in
 
 #define D 4
 #define treshold 0
-
 #define s_a 1
 #define s_c 2
 #define s_g 3
@@ -307,86 +290,94 @@ std::set<int> locate(const unsigned char *bwt,int *C,int *B,int *SSA, int sp, in
 	Calculates locations of pattern P occurrences.
 	Returns set of found locations.
 	Optimized FM index locate function.
-	
 	@Author: Anel Hadzimuratagic, Andrea Bernat
 */
 std::set<int> FM_tree(const unsigned char *bwt,const unsigned char *T,int *C,int *B,int* SSA, char P[], int *sp, int *ep ,int n, rank_select *ran,rank_select *tb) {
     int total_num = *ep - *sp + 1;
-    int num = 0;
     int layer=0;
-    int R_size=0;
     int sp_child[4];
     int ep_child[4];
     int t=0;
     int ssp=0;
     int sep=0;
 
+    int boolChar[4];
+
+    int v_sp=*sp;
+    int v_ep=*ep;
+
     if(total_num == 0){
         return std::set<int>();
     }
     std::set<int> R = early_leaf_node(T, bwt, C, P, SSA, B, n, ran, tb);
-    R_size=R.size();
-    num+=R_size;
 
     int tree_height = D - 1;
-    Node node(*sp, *ep, layer);
+    Node node(v_sp, v_ep, layer);
     queue <Node> nodeQueue;
     nodeQueue.push(node);
 
-    while(!nodeQueue.empty() && num<total_num){
+    while(!nodeQueue.empty() && R.size()<total_num){
+
+        boolChar[0]=0;
+        boolChar[1]=0;
+        boolChar[2]=0;
+        boolChar[3]=0;
+
         node=nodeQueue.front();
-        *sp=node.getSp();
-        *ep=node.getEp();
+        nodeQueue.pop();
+
+        v_sp=node.getSp();
+        v_ep=node.getEp();
         layer=node.getLayer();
 
-        ssp=rankBin(B,*sp);
-        sep=rankBin(B,*ep);
-        num=num+sep-ssp+1;
-        if(ep-sp+1<treshold){
-            int old_size=R.size();
-            R = locate(bwt,C,B,SSA,*sp,*ep,R,ran,tb);
-            int new_size=R.size();
-            num+=(new_size-old_size);
+        //ssp=rankBin(B,*sp);
+        //sep=rankBin(B,*ep);
+        //num=num+sep-ssp+1;
+        if(v_ep-v_sp+1<treshold){
+            R = locate(bwt,C,B,SSA,v_sp,v_ep,R,ran,tb);
+
         }else{
-        //
-        ssp=tb->rank('1',*sp-1);
-        sep=tb->rank('1',*ep-1);
-        num=num+sep-ssp+1;
+            ssp=tb->rank('1',v_sp-1);
+            sep=tb->rank('1',v_ep);
 
-        for(int k=ssp;k<=sep;k++){
-            R.insert(SSA[k]+layer);
-            R_size++;
-            if(R_size>total_num){
-                return R;
-            }
-        }
-
-        if((layer+1)<tree_height){
-            if(C[s_a]!=0){
-                sp_child[0]=C[s_a]+ran->rank('A',*sp-1);
-                ep_child[0]=C[s_a]+ran->rank('A',*ep)-1;
-            }
-            if(C[s_c]!=0){
-                sp_child[1]=C[s_c]+ran->rank('C',*sp-1);
-                ep_child[1]=C[s_c]+ran->rank('C',*ep)-1;
-            }
-            if(C[s_g]!=0){
-                sp_child[2]=C[s_g]+ran->rank('G',*sp-1);
-                ep_child[2]=C[s_g]+ran->rank('G',*ep)-1;
-            }
-            if(C[s_t]!=0){
-                sp_child[3]=C[s_t]+ran->rank('T',*sp-1);
-                ep_child[3]=C[s_t]+ran->rank('T',*ep)-1;
+            if((ssp == sep) && test_bit(B, v_sp)==1){
+                sep++;
             }
 
-            for(t=0;t<=3;t++){
-                if(sp_child[t]!=-1 && ep_child[t]!=-1 && sp_child[t]<=ep_child[t]) {
-                    Node nodeNew(sp_child[t], ep_child[t], layer + 1);
-                    nodeQueue.push(nodeNew);
+            for(int k=ssp;k<sep;k++){
+                R.insert(SSA[k]+layer);
+            }
+
+            if((layer+1)<=tree_height){
+                if(C[s_a]!=0){
+                    boolChar[0]=1;
+                    sp_child[0]=C[s_a]+ran->rank('A',v_sp-1);
+                    ep_child[0]=C[s_a]+ran->rank('A',v_ep)-1;
+                }
+                if(C[s_c]!=0){
+                    boolChar[1]=1;
+                    sp_child[1]=C[s_c]+ran->rank('C',v_sp-1);
+                    ep_child[1]=C[s_c]+ran->rank('C',v_ep)-1;
+                }
+                if(C[s_g]!=0){
+                    boolChar[2]=1;
+                    sp_child[2]=C[s_g]+ran->rank('G',v_sp-1);
+                    ep_child[2]=C[s_g]+ran->rank('G',v_ep)-1;
+                }
+                if(C[s_t]!=0){
+                    boolChar[3]=1;
+                    sp_child[3]=C[s_t]+ran->rank('T',v_sp-1);
+                    ep_child[3]=C[s_t]+ran->rank('T',v_ep)-1;
+                }
+
+                for(t=0;t<=3;t++){
+                    if(boolChar[t]==1 && sp_child[t]!=-1 && ep_child[t]!=-1 && sp_child[t]<=ep_child[t]) {
+                        Node nodeNew(sp_child[t], ep_child[t], layer + 1);
+                        nodeQueue.push(nodeNew);
+                    }
                 }
             }
         }
     }
-}
-return R;
+    return R;
 }

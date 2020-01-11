@@ -4,8 +4,10 @@
 #include <set>
 #include "lib/bitmask.h"
 #include "lib/bitmask_bitset.h"
+#include "lib/bitmask_vector.h"
 #include "lib/data.h"
 #include "lib/rank_select.h"
+#include "lib/lookup_list.h"
 #include "lib/rb_tree.h"
 
 class Node

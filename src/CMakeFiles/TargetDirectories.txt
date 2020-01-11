@@ -1,3 +1,0 @@
-/home/anel/Downloads/FMTree/CMakeFiles/rebuild_cache.dir
-/home/anel/Downloads/FMTree/CMakeFiles/FMtree.dir
-/home/anel/Downloads/FMTree/CMakeFiles/edit_cache.dir
