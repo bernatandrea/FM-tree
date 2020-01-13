@@ -93,53 +93,10 @@ void make_result_file(std::set<int> R){
     }
 }
 
-/*
-	Uppercase whole char array P.
-	@Author: Andrea Bernat
-*/
-void upperCase(char *P){
 
-    for (int i=0; i < ARRAY_SIZE; i++){
-        P[i] = toupper(P[i]);
-    }
-}
+long size_of_file(FILE *fp, char *fname){
 
-
-/*void calculate_memory_usage(){
-    PROCESS_MEMORY_COUNTERS pmc;
-    BOOL result = GetProcessMemoryInfo(GetCurrentProcess(),
-                                       &pmc,
-                                       sizeof( pmc ));
-    if(result){
-        printf( "\nThere is %d KB memory in use.\n", pmc.WorkingSetSize/1024 );
-    }
-}*/
-
-
-/*
-	Main function for FM tree execution.
-	@Author: Anel Hadzimuratagic, Robert Jambrecic, Andrea Bernat
-*/
-int main() {
-    FILE *fp;
-    char fname[ARRAY_SIZE];
     long n;
-    rank_select *t;
-    rank_select *tb;
-    int sp=0;
-    int ep=0;
-    char P[ARRAY_SIZE];
-    int D;
-
-    fprintf(stdout, "Input name of test file: ");
-    scanf("%s", fname);
-
-    /* Open a file for reading. */
-    if((fp = fopen(fname, "rb")) == NULL) {
-        printf(" Cannot open file ");
-        perror(NULL);
-        exit(EXIT_FAILURE);
-    }
 
     /* Get the file size. */
     if(fseek(fp, 0, SEEK_END) == 0) {
@@ -156,8 +113,96 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
+    return n;
+}
+
+
+/*
+	Uppercase whole char array P.
+	@Author: Andrea Bernat
+*/
+void upperCase(char *P){
+
+    for (int i=0; i < ARRAY_SIZE; i++){
+        P[i] = toupper(P[i]);
+    }
+}
+
+
+char* make_pattern(){
+    FILE *fp;
+    char fname[ARRAY_SIZE];
+    long n;
+
+    fprintf(stdout, "\nInput name of pattern file: ");
+    scanf("%s", fname);
+
+    if((fp = fopen(fname, "rb")) == NULL) {
+        printf(" Cannot open file ");
+        perror(NULL);
+        exit(EXIT_FAILURE);
+    }
+    
+    n = size_of_file(fp, fname);
+
+    char *P = (char *)malloc((size_t)n * sizeof(char));
+
+    /* Read n bytes of data. */
+    if(fread(P, sizeof(unsigned char), (size_t)n, fp) != (size_t)n) {
+        fprintf(stderr, "%s: %s `%s': ",
+                "main",
+                (ferror(fp) || !feof(fp)) ? "Cannot read from" : "Unexpected EOF in",
+                fname);
+        perror(NULL);
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(fp);
+    
+    return P;
+}
+
+
+/*void calculate_memory_usage(){
+    PROCESS_MEMORY_COUNTERS pmc;
+    BOOL result = GetProcessMemoryInfo(GetCurrentProcess(),
+                                       &pmc,
+                                       sizeof( pmc ));
+    if(result){
+        printf( "\nThere is %d KB memory in use.\n", pmc.WorkingSetSize/1024 );
+    }
+}
+*/
+
+
+/*
+	Main function for FM tree execution.
+	@Author: Anel Hadzimuratagic, Robert Jambrecic, Andrea Bernat
+*/
+int main() {
+    FILE *fp;
+    char fname[ARRAY_SIZE];
+    long n;
+    rank_select *t;
+    rank_select *tb;
+    int sp=0;
+    int ep=0;
+    char *P;
+    int D;
+
+    fprintf(stdout, "Input name of test file: ");
+    scanf("%s", fname);
+
+    if((fp = fopen(fname, "rb")) == NULL) {
+        printf(" Cannot open file ");
+        perror(NULL);
+        exit(EXIT_FAILURE);
+    }
+
     fprintf(stdout, "Input sampling distance: ");
     scanf("%d", &D);
+
+    n = size_of_file(fp, fname);
 
     /* Allocate 5n bytes of memory. */
     unsigned char *T = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
@@ -178,7 +223,7 @@ int main() {
         fprintf(stderr, "%s: %s `%s': ",
                 "main",
                 (ferror(fp) || !feof(fp)) ? "Cannot read from" : "Unexpected EOF in",
-                "test-short.txt");
+                fname);
         perror(NULL);
         exit(EXIT_FAILURE);
     }
@@ -211,9 +256,7 @@ int main() {
         scanf("%d", &mode);
 
         if(mode == 1){
-
-            fprintf(stdout, "\nPlease input the pattern for search:\n");
-            scanf("%s", P);
+            P = make_pattern();
             upperCase(P);
 
         }else if(mode == 2){
