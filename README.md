@@ -13,7 +13,7 @@ FMtree: A fast locating algorithm of FM-indexes for genomic data
 Introduction
 -------  
 
-Here are the implementations of "FMtree: A fast locating algorithm of FM-indexes for genomic data".
+Here are the implementation of "FMtree: A fast locating algorithm of FM-indexes for genomic data".
 This program was created as a project assignment for <a href="https://www.fer.unizg.hr/predmet/bio" target="_blank">Bioinformatics</a> class at Faculty of Electrical Engineering and Computing, University of Zagreb.
 
 
@@ -29,22 +29,18 @@ How to use
 
 For FM-tree:
 
-* First to generate binary write this commands in your command shell positioned inside the project.
+* First to generate binary write this command in your command shell positioned inside the project.
 
-Create Makefile:
-```
-cmake . 
-```
 Create executable file:
 ```
-make -f Makefile 
+make 
 ```
 Now you can run program:
 ```
 ./FMtree 
 ```
 
-* After you run the program you will asked to input sampling distance
+* After you run the program you will be asked to input sampling distance
 
 * For generating the pattern you would like to search over your input text file choose the first option.
 `Please note that patterns cannot include any character which does not belong to { A, C, G, T}`. 
@@ -54,7 +50,7 @@ If some patterns consist of such characters, the results of FMtree would be inco
  For example, consider a text "ecoli.txt", its index consists of  BWT,SA,C(occ) arrays which are created by choosing 
  second option. `Like the patterns, the input text can only include the characters which belong to {A, C, G, T}`.
 
-* For searching with FMtree choose third option. Result count and locations will be saved in `results.txt` and 
+* For searching with FMtree choose third option. Result with count and locations will be saved in `results.txt` and 
 program preferences will be written on a console.
 
 * Example: After running FMtree it will report the following information:

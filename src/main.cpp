@@ -58,7 +58,7 @@ rank_select* create_binary_wavelet_tree(int *B, int n){
     std::vector<data *> data_chunks_bin;
     std::function<bitmask *(uint32_t)> c_bin;
     std::unordered_map<char, uint32_t> counters_bin;
-    uint32_t word_size_bin = 2358030;
+    uint32_t word_size_bin = 23508030;
     c_bin = bitmask_bitset::create;
     bitmask::set_creator(c_bin);
 
@@ -105,7 +105,7 @@ void upperCase(char *P){
 }
 
 
-void calculate_memory_usage(){
+/*void calculate_memory_usage(){
     PROCESS_MEMORY_COUNTERS pmc;
     BOOL result = GetProcessMemoryInfo(GetCurrentProcess(),
                                        &pmc,
@@ -113,7 +113,7 @@ void calculate_memory_usage(){
     if(result){
         printf( "\nThere is %d KB memory in use.\n", pmc.WorkingSetSize/1024 );
     }
-}
+}*/
 
 
 /*
@@ -164,7 +164,7 @@ int main() {
     unsigned char *bwt = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
     unsigned char *sortedT = (unsigned char *)malloc((size_t)n * sizeof(unsigned char));
     int *SA = (int *)malloc((size_t)n * sizeof(int));
-    int *SSA = (int *)malloc((size_t)(int(ceil(n/(float)D))) * sizeof(int));
+    unsigned int *SSA = (unsigned int *)malloc((size_t)(int(ceil(n/(float)D))) * sizeof(int));
     int *C = (int *)malloc((size_t)5 * sizeof(int));
     int *B = (int *)malloc((size_t)(int(ceil(n/(float)32)) * sizeof(int)));
 
@@ -221,8 +221,8 @@ int main() {
             //---------------- create walvet tree for bwt -------------
 
             t = create_wavelet_tree(bwt);
-            printf("\nCount found %d locations.\n",count(bwt,C,P,&sp,&ep,n,t));
-            createSSA(SA,B,SSA,D,n);
+            printf("\nCount found %d locations.\n",count(C,P,&sp,&ep,n,t));
+            createSSA(SA,bwt,B,SSA,D,n);
             free(SA);
 
             //---------------- create binary walvet tree for bwt -------------
@@ -233,7 +233,7 @@ int main() {
 
             struct timeval tvalStart, tvalEnd;
             gettimeofday(&tvalStart, NULL);
-            std::set<int> R=FM_tree(bwt,T,C,B,SSA,P,&sp,&ep,n,t,tb);
+            std::set<int> R=FM_tree(bwt,T,C,B,SSA,P,&sp,&ep,n,D,t,tb);
             gettimeofday(&tvalEnd, NULL);
 
             printf("\n\n*********************Result*********************");
@@ -257,7 +257,7 @@ int main() {
     free(B);
     free(SSA);
 
-    calculate_memory_usage();
+    //calculate_memory_usage();
 
     return 0;
 }
