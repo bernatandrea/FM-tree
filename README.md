@@ -37,18 +37,19 @@ make
 ```
 Now you can run program:
 ```
-./FMtree 
+FMtree.exe 
 ```
 
-* After you run the program you will be asked to input sampling distance
+* After you run the program you will be asked to input text file you would like to search and sampling distance of suffix array SA.
+`Please note that input text file cannot include any character which does not belong to {A, C, G, T, $(end)}`
 
 * For generating the pattern you would like to search over your input text file choose the first option.
-`Please note that patterns cannot include any character which does not belong to { A, C, G, T}`. 
+`Like the input text file, pattern file can only include the characters which belong to {A, C, G, T}. Note that there is no $ in pattern`. 
 If some patterns consist of such characters, the results of FMtree would be incorrect.
 
 * To build the index for the input text(genome) you will choose second option.
  For example, consider a text "ecoli.txt", its index consists of  BWT,SA,C(occ) arrays which are created by choosing 
- second option. `Like the patterns, the input text can only include the characters which belong to {A, C, G, T}`.
+ second option.
 
 * For searching with FMtree choose third option. Result with count and locations will be saved in `results.txt` and 
 program preferences will be written on a console.
