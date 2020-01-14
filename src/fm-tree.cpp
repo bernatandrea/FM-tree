@@ -4,8 +4,10 @@
 #include <bitset>
 #include <set>
 #include "lib/rank_select.h"
-
 using namespace std;
+
+unsigned int modeBWT=3758096384; // bit mask 111000..00(28 zeros)
+unsigned int modeSA=536870911;  // bit mask 000111..11(28 ones)
 
 /*
 	Setting bit in array A on position k
@@ -176,6 +178,7 @@ void createSSA(int *SA, unsigned char *bwt, int *B,unsigned int *SSA,int D, int 
             set_bit(B,i);
             SSA[j]=SA[i];
 
+            // setting on first 3 bits bwt[i] so that can be used in early leaf calculation
             if(bwt[i]=='$'){  // 100 2^31 - 4
                 SSA[j]=SSA[j] | 2147483648;
             }else if(bwt[i]=='C'){ // 001 2^29 - 1
@@ -199,13 +202,13 @@ void createSSA(int *SA, unsigned char *bwt, int *B,unsigned int *SSA,int D, int 
 	in D-1 step of FM tree.
 	@Author: Anel Hadzimuratagic
 */
-std::set<int> early_leaf_node(int *C, char P[], unsigned int *SSA, int *B, int n, rank_select* t,rank_select *tb){
+set<int> early_leaf_node(int *C, char P[], unsigned int *SSA, int *B, int n, rank_select* rank, rank_select *rank_b){
     int s;
     int sp = 0;
     int ep = 0;
     int i = strlen(P);
     char P_1[i-1];
-    std::set<int> R;
+    set<int> R;
 
     if(i==1){
         return R;
@@ -214,8 +217,9 @@ std::set<int> early_leaf_node(int *C, char P[], unsigned int *SSA, int *B, int n
     string str = P;
     strcpy(P_1, str.substr(1,i).c_str());
 
-    count(C, P_1, &sp, &ep, n, t);
+    count(C, P_1, &sp, &ep, n, rank);
 
+    // preparation to compare with first 3 bits in SSA
     if(P[0]=='A'){
         s=0; // 000
     } else if(P[0]=='C'){
@@ -228,19 +232,16 @@ std::set<int> early_leaf_node(int *C, char P[], unsigned int *SSA, int *B, int n
         s=4; // 100
     }
 
-    int ssp1=tb->rank('1',sp-1);
-    int sep1=tb->rank('1',ep);
-
-    unsigned int modeBWT=3758096384; // bit mask 111000..00(28 zeros)
-    unsigned int modeSA=536870911;  // bit mask 000111..11(28 ones)
+    int ssp=rank_b->rank('1', sp - 1);
+    int sep=rank_b->rank('1', ep);
 
     unsigned int SA_element;
     unsigned int BWT_element;
 
-    if(ssp1==sep1 && test_bit(B,sp)==1){
-        sep1+=1;
+    if(ssp == sep && test_bit(B, sp) == 1){
+        sep+=1;
     }
-    for(int i=ssp1;i<sep1;i++){
+    for(int i=ssp; i < sep; i++){
         SA_element=(SSA[i]&modeSA);
         BWT_element=(SSA[i]&modeBWT)>>29;
 
@@ -258,14 +259,18 @@ std::set<int> early_leaf_node(int *C, char P[], unsigned int *SSA, int *B, int n
 	sortedT[sp,ep] includes all sortedT rows prefixed by P.
 	@Author: Robert Jambrecic
 */
-int count(int *C,char* P, int *sp, int *ep ,int n, rank_select *t){
-    int i=strlen(P)-1;
-    char s=P[i--];
+int count(int *C,char* P, int *sp, int *ep ,int n, rank_select *rank){
+    int len= strlen(P) - 1;
+    char s=P[len--];
     int si=acgtToInt(s);
 
-    //if there is no occurrence return -1
-    if(C[si]==0 && si!=0){
-        return -1;
+    //if there is no occurrence or bad char return 0
+    if(C[si]==0){
+		
+		//set sp and ep that result *ep-*sp+1=0
+		*sp=1;
+		*ep=0;
+        return 0;
     }
     *sp=C[si];
 
@@ -280,10 +285,10 @@ int count(int *C,char* P, int *sp, int *ep ,int n, rank_select *t){
         *ep=C[si+1]-1;
     }
 
-    while(i>=0 && *sp<=*ep ){
-        s=P[i--];
-        *sp=C[acgtToInt(s)]+ t->rank(toupper(s), *sp-1);
-        *ep=C[acgtToInt(s)]+t->rank(toupper(s), *ep)-1;
+    while(len >= 0 && *sp <= *ep ){
+        s=P[len--];
+        *sp= C[acgtToInt(s)] + rank->rank(toupper(s), *sp - 1);
+        *ep= C[acgtToInt(s)] + rank->rank(toupper(s), *ep) - 1;
     }
 
     if(*sp>*ep){
@@ -299,28 +304,28 @@ int count(int *C,char* P, int *sp, int *ep ,int n, rank_select *t){
 	Returns set of found locations.
 	@Author: Andrea Bernat
 */
-std::set<int> locate(const unsigned char *bwt,int *C,int *B,unsigned int *SSA, int sp, int ep,set<int> R, rank_select *ran,rank_select *tb) {
+set<int> locate(const unsigned char *bwt, int *C, int *B, unsigned int *SSA, int sp, int ep, set<int> R, rank_select *rank, rank_select *rank_b) {
     int i=0;
     int j=0;
     int m=0;
     int SA_element;
-    unsigned int modeSA=536870911; // 000111..111(28 ones)
 
     for(i=sp;i<=ep;i++){
         m=0;
         j=i;
         while(test_bit(B,j)!=1){
             //LF operation
-            j=C[acgtToInt(bwt[j])]+ran->rank(bwt[j],j-1);
+            j= C[acgtToInt(bwt[j])] + rank->rank(bwt[j], j - 1);
             m+=1;
         }
-        SA_element=SSA[tb->rank('1',j-1)]&modeSA;
+        // obtain SSA element
+        SA_element= SSA[rank_b->rank('1', j - 1)] & modeSA;
         R.insert(SA_element+m);
     }
     return R;
 }
 
-
+// trashold can be changed
 #define treshold 10
 #define s_a 1
 #define s_c 2
@@ -335,27 +340,24 @@ std::set<int> locate(const unsigned char *bwt,int *C,int *B,unsigned int *SSA, i
 	Optimized FM index locate function.
 	@Author: Anel Hadzimuratagic, Andrea Bernat
 */
-std::set<int> FM_tree(const unsigned char *bwt,const unsigned char *T,int *C,int *B,unsigned int* SSA, char P[], int *sp, int *ep ,int n,int D, rank_select *ran,rank_select *tb) {
-    int total_num = *ep - *sp + 1;
-    int layer=0;
+set<int> FM_tree(const unsigned char *bwt,int *C,int *B,unsigned int* SSA, char P[], int *sp, int *ep ,int n,int D, rank_select *rank,rank_select *rank_b) {
     int sp_child[4];
     int ep_child[4];
-    int t=0;
+    int nextNodeSuccess[4];
+    int total_num = *ep - *sp + 1;
+    int tree_height = D - 1;
+    int layer=0;
     int ssp=0;
     int sep=0;
-
-    int boolChar[4];
-
-    unsigned int modeSA=536870911; // 000111..111(28 ones)
     unsigned int SA_element;
-
+    int i=0;
 
     if(total_num == 0){
-        return std::set<int>();
+        return set<int>();
     }
-    std::set<int> R = early_leaf_node(C, P, SSA, B, n, ran, tb);
 
-    int tree_height = D - 1;
+    set<int> R = early_leaf_node(C, P, SSA, B, n, rank, rank_b);
+
     Node node(*sp, *ep, layer);
     queue <Node> nodeQueue;
     nodeQueue.push(node);
@@ -370,10 +372,10 @@ std::set<int> FM_tree(const unsigned char *bwt,const unsigned char *T,int *C,int
         layer=node.getLayer();
 
         if(*ep-*sp+1<treshold){
-            R = locate(bwt,C,B,SSA,*sp,*ep,R,ran,tb);
+            R = locate(bwt,C,B,SSA,*sp,*ep,R,rank,rank_b);
         }else{
-            ssp=tb->rank('1',*sp-1);
-            sep=tb->rank('1',*ep);
+            ssp=rank_b->rank('1',*sp-1);
+            sep=rank_b->rank('1',*ep);
 
             if((ssp == sep) && test_bit(B, *sp)==1){
                 sep++;
@@ -386,32 +388,32 @@ std::set<int> FM_tree(const unsigned char *bwt,const unsigned char *T,int *C,int
 
             if((layer+1)<=tree_height){
                 if(C[s_a]!=0){
-                    boolChar[0]=1;
-                    sp_child[0]=C[s_a]+ran->rank('A',*sp-1);
-                    ep_child[0]=C[s_a]+ran->rank('A',*ep)-1;
+                    nextNodeSuccess[0]=1;
+                    sp_child[0]=C[s_a]+rank->rank('A',*sp-1);
+                    ep_child[0]=C[s_a]+rank->rank('A',*ep)-1;
                 }
                 if(C[s_c]!=0){
-                    boolChar[1]=1;
-                    sp_child[1]=C[s_c]+ran->rank('C',*sp-1);
-                    ep_child[1]=C[s_c]+ran->rank('C',*ep)-1;
+                    nextNodeSuccess[1]=1;
+                    sp_child[1]=C[s_c]+rank->rank('C',*sp-1);
+                    ep_child[1]=C[s_c]+rank->rank('C',*ep)-1;
                 }
                 if(C[s_g]!=0){
-                    boolChar[2]=1;
-                    sp_child[2]=C[s_g]+ran->rank('G',*sp-1);
-                    ep_child[2]=C[s_g]+ran->rank('G',*ep)-1;
+                    nextNodeSuccess[2]=1;
+                    sp_child[2]=C[s_g]+rank->rank('G',*sp-1);
+                    ep_child[2]=C[s_g]+rank->rank('G',*ep)-1;
                 }
                 if(C[s_t]!=0){
-                    boolChar[3]=1;
-                    sp_child[3]=C[s_t]+ran->rank('T',*sp-1);
-                    ep_child[3]=C[s_t]+ran->rank('T',*ep)-1;
+                    nextNodeSuccess[3]=1;
+                    sp_child[3]=C[s_t]+rank->rank('T',*sp-1);
+                    ep_child[3]=C[s_t]+rank->rank('T',*ep)-1;
                 }
 
-                for(t=0;t<=3;t++){
-                    if(boolChar[t]==1 && sp_child[t]!=-1 && ep_child[t]!=-1 && sp_child[t]<=ep_child[t]) {
-                        Node nodeNew(sp_child[t], ep_child[t], layer + 1);
+                for(i=0; i <= 3; i++){
+                    if(nextNodeSuccess[i] == 1 && sp_child[i] != -1 && ep_child[i] != -1 && sp_child[i] <= ep_child[i]) {
+                        Node nodeNew(sp_child[i], ep_child[i], layer + 1);
                         nodeQueue.push(nodeNew);
                     }
-                    boolChar[t]=0;
+                    nextNodeSuccess[i]=0;
                 }
             }
         }
