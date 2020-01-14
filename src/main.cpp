@@ -282,7 +282,6 @@ int main() {
             //---------------- create walvet tree for bwt -------------
 
             rank = create_wavelet_tree(bwt, n);
-            printf("\nCount found %d locations.\n",count(C, P, &sp, &ep, n, rank));
             createSSA(SA,bwt,B,SSA,D,n);
             free(SA);
 
@@ -301,6 +300,8 @@ int main() {
                 fprintf(stdout, "\nPlease make pattern before search!\n");
 				continue;
 			}
+            
+            printf("\nCount found %d locations.\n",count(C, P, &sp, &ep, n, rank));
             struct timeval tvalStart, tvalEnd;
             gettimeofday(&tvalStart, NULL);
             std::set<int> R=FM_tree(bwt, C, B, SSA, P, &sp, &ep, n, D, rank, rank_b);
