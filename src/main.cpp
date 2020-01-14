@@ -160,15 +160,7 @@ char* make_pattern(){
 
     char *P = (char *)malloc((size_t)n * sizeof(char));
 
-    /* Read n bytes of data. */
-    if(fread(P, sizeof(unsigned char), (size_t)n, fp) != (size_t)n) {
-        fprintf(stderr, "%s: %s `%s': ",
-                "main",
-                (ferror(fp) || !feof(fp)) ? "Cannot read from" : "Unexpected EOF in",
-                fname);
-        perror(NULL);
-        exit(EXIT_FAILURE);
-    }
+    fscanf(fp, "%s", P);
 
     fclose(fp);
 
