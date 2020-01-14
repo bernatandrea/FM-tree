@@ -93,7 +93,10 @@ void make_result_file(std::set<int> R){
     }
 }
 
-
+/*
+	Returns the size of the file.
+	@Author: Anel Hadzimuratagic
+*/
 long size_of_file(FILE *fp, char *fname){
 
     long n;
@@ -128,7 +131,10 @@ void upperCase(char *P){
     }
 }
 
-
+/*
+	Asks the user to provide the pattern file and reads the pattern from the file.
+	@Author: Robert Jambrecic
+*/
 char* make_pattern(){
     FILE *fp;
     char fname[ARRAY_SIZE];
